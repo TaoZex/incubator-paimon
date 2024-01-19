@@ -101,6 +101,7 @@ public class BranchManager {
         }
     }
 
+    //add
     public void deleteBranch(String branchName) {
         checkArgument(branchExists(branchName), "Branch name '%s' doesn't exist.", branchName);
         try {
