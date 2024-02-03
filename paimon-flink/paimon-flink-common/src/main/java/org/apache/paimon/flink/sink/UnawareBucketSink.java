@@ -74,7 +74,7 @@ public abstract class UnawareBucketSink<T> extends FlinkWriteSink<T> {
                     new UnawareBucketCompactionTopoBuilder(
                             input.getExecutionEnvironment(), table.name(), table);
             builder.withContinuousMode(true);
-            //written = written.union(builder.fetchUncommitted(initialCommitUser));
+            // written = written.union(builder.fetchUncommitted(initialCommitUser));
         }
 
         return written;
