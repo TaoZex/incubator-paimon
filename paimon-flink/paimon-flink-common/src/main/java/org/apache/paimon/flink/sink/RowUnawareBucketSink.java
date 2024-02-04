@@ -19,15 +19,9 @@
 package org.apache.paimon.flink.sink;
 
 import org.apache.paimon.data.InternalRow;
-import org.apache.paimon.flink.compact.UnawareBucketCompactionTopoBuilder;
 import org.apache.paimon.table.FileStoreTable;
 
-import org.apache.flink.api.common.RuntimeExecutionMode;
-import org.apache.flink.configuration.ExecutionOptions;
-import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.operators.OneInputStreamOperator;
-
-import javax.annotation.Nullable;
 
 import java.util.Map;
 
@@ -47,29 +41,5 @@ public class RowUnawareBucketSink extends UnawareBucketSink<InternalRow> {
     protected OneInputStreamOperator<InternalRow, Committable> createWriteOperator(
             StoreSinkWrite.Provider writeProvider, String commitUser) {
         return new RowDataStoreWriteOperator(table, logSinkFunction, writeProvider, commitUser);
-    }
-
-    @Override
-    public DataStream<Committable> doWrite(
-            DataStream<InternalRow> input,
-            String initialCommitUser,
-            @Nullable Integer parallelism) {
-        DataStream<Committable> written = super.doWrite(input, initialCommitUser, parallelism);
-        boolean enableCompaction = !table.coreOptions().writeOnly();
-        boolean isStreamingMode =
-                input.getExecutionEnvironment()
-                                .getConfiguration()
-                                .get(ExecutionOptions.RUNTIME_MODE)
-                        == RuntimeExecutionMode.STREAMING;
-        // if enable compaction, we need to add compaction topology to this job
-        if (enableCompaction && isStreamingMode && !boundedInput) {
-            // if streaming mode with bounded input, we disable compaction topology
-            UnawareBucketCompactionTopoBuilder builder =
-                    new UnawareBucketCompactionTopoBuilder(
-                            input.getExecutionEnvironment(), table.name(), table);
-            builder.withContinuousMode(true);
-            written = written.union(builder.fetchUncommitted(initialCommitUser));
-        }
-        return written;
     }
 }
