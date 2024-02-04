@@ -18,7 +18,6 @@
 
 package org.apache.paimon.spark.procedure;
 
-import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.paimon.catalog.Catalog;
 import org.apache.paimon.catalog.Identifier;
 import org.apache.paimon.hive.HiveCatalog;
@@ -26,6 +25,8 @@ import org.apache.paimon.migrate.Migrator;
 import org.apache.paimon.spark.catalog.WithPaimonCatalog;
 import org.apache.paimon.spark.utils.TableMigrationUtils;
 import org.apache.paimon.utils.ParameterUtils;
+
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.spark.sql.catalyst.InternalRow;
 import org.apache.spark.sql.connector.catalog.TableCatalog;
 import org.apache.spark.sql.types.DataTypes;
@@ -88,7 +89,7 @@ public class MigrateDatabaseProcedure extends BaseProcedure {
         try {
             sourceTables = client.getAllTables(sourceDatabasePath);
         } catch (TException e) {
-            throw new RuntimeException("Get all tables path in database failed.",e);
+            throw new RuntimeException("Get all tables path in database failed.", e);
         }
         for (String sourceTable : sourceTables) {
             String sourceTablePath = sourceDatabasePath + "." + sourceTable;
@@ -116,7 +117,6 @@ public class MigrateDatabaseProcedure extends BaseProcedure {
         }
         return new InternalRow[] {newInternalRow(true)};
     }
-
 
     public static ProcedureBuilder builder() {
         return new Builder<MigrateDatabaseProcedure>() {
