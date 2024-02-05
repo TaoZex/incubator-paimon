@@ -25,70 +25,66 @@ class MigrateDatabaseProcedureTest extends PaimonHiveTestBase {
   Seq("parquet", "orc", "avro").foreach(
     format => {
       test(s"Paimon migrate database procedure: migrate $format non-partitioned table") {
-        withTable("hive_tbl") {
-          // create hive table1
-          spark.sql(s"""
-                       |CREATE TABLE hive_tbl1 (id STRING, name STRING, pt STRING)
-                       |USING $format
-                       |""".stripMargin)
+        // create hive table1
+        spark.sql(s"""
+                     |CREATE TABLE hive_tbl1 (id STRING, name STRING, pt STRING)
+                     |USING $format
+                     |""".stripMargin)
 
-          spark.sql(s"INSERT INTO hive_tbl1 VALUES ('1', 'a', 'p1'), ('2', 'b', 'p2')")
+        spark.sql(s"INSERT INTO hive_tbl1 VALUES ('1', 'a', 'p1'), ('2', 'b', 'p2')")
 
-          // create hive table2
-          spark.sql(s"""
-                       |CREATE TABLE hive_tbl2 (id STRING, name STRING, pt STRING)
-                       |USING $format
-                       |""".stripMargin)
+        // create hive table2
+        spark.sql(s"""
+                     |CREATE TABLE hive_tbl2 (id STRING, name STRING, pt STRING)
+                     |USING $format
+                     |""".stripMargin)
 
-          spark.sql(s"INSERT INTO hive_tbl2 VALUES ('3', 'c', 'p3'), ('4', 'd', 'p4')")
+        spark.sql(s"INSERT INTO hive_tbl2 VALUES ('3', 'c', 'p3'), ('4', 'd', 'p4')")
 
-          spark.sql(
-            s"CALL sys.migrate_database(source_type => 'hive', table => '$hiveDbName', options => 'file.format=$format')")
+        spark.sql(
+          s"CALL sys.migrate_database(source_type => 'hive', table => '$hiveDbName', options => 'file.format=$format')")
 
-          checkAnswer(
-            spark.sql(s"SELECT * FROM hive_tbl1 ORDER BY id"),
-            Row("1", "a", "p1") :: Row("2", "b", "p2") :: Nil)
+        checkAnswer(
+          spark.sql(s"SELECT * FROM hive_tbl1 ORDER BY id"),
+          Row("1", "a", "p1") :: Row("2", "b", "p2") :: Nil)
 
-          checkAnswer(
-            spark.sql(s"SELECT * FROM hive_tbl2 ORDER BY id"),
-            Row("3", "c", "p3") :: Row("4", "d", "p4") :: Nil)
-        }
+        checkAnswer(
+          spark.sql(s"SELECT * FROM hive_tbl2 ORDER BY id"),
+          Row("3", "c", "p3") :: Row("4", "d", "p4") :: Nil)
       }
     })
 
   Seq("parquet", "orc", "avro").foreach(
     format => {
       test(s"Paimon migrate database procedure: migrate $format partitioned table") {
-        withTable("hive_tbl") {
-          // create hive table1
-          spark.sql(s"""
-                       |CREATE TABLE1 hive_tbl1 (id STRING, name STRING, pt STRING)
-                       |USING $format
-                       |PARTITIONED BY (pt)
-                       |""".stripMargin)
+        // create hive table1
+        spark.sql(s"""
+                     |CREATE TABLE1 hive_tbl1 (id STRING, name STRING, pt STRING)
+                     |USING $format
+                     |PARTITIONED BY (pt)
+                     |""".stripMargin)
 
-          spark.sql(s"INSERT INTO hive_tbl1 VALUES ('1', 'a', 'p1'), ('2', 'b', 'p2')")
+        spark.sql(s"INSERT INTO hive_tbl1 VALUES ('1', 'a', 'p1'), ('2', 'b', 'p2')")
 
-          // create hive table2
-          spark.sql(s"""
-                       |CREATE TABLE1 hive_tbl2 (id STRING, name STRING, pt STRING)
-                       |USING $format
-                       |PARTITIONED BY (pt)
-                       |""".stripMargin)
+        // create hive table2
+        spark.sql(s"""
+                     |CREATE TABLE1 hive_tbl2 (id STRING, name STRING, pt STRING)
+                     |USING $format
+                     |PARTITIONED BY (pt)
+                     |""".stripMargin)
 
-          spark.sql(s"INSERT INTO hive_tbl2 VALUES ('3', 'c', 'p3'), ('4', 'd', 'p4')")
+        spark.sql(s"INSERT INTO hive_tbl2 VALUES ('3', 'c', 'p3'), ('4', 'd', 'p4')")
 
-          spark.sql(
-            s"CALL sys.migrate_database(source_type => 'hive', table => '$hiveDbName', options => 'file.format=$format')")
+        spark.sql(
+          s"CALL sys.migrate_database(source_type => 'hive', table => '$hiveDbName', options => 'file.format=$format')")
 
-          checkAnswer(
-            spark.sql(s"SELECT * FROM hive_tbl1 ORDER BY id"),
-            Row("1", "a", "p1") :: Row("2", "b", "p2") :: Nil)
+        checkAnswer(
+          spark.sql(s"SELECT * FROM hive_tbl1 ORDER BY id"),
+          Row("1", "a", "p1") :: Row("2", "b", "p2") :: Nil)
 
-          checkAnswer(
-            spark.sql(s"SELECT * FROM hive_tbl2 ORDER BY id"),
-            Row("3", "c", "p3") :: Row("4", "d", "p4") :: Nil)
-        }
+        checkAnswer(
+          spark.sql(s"SELECT * FROM hive_tbl2 ORDER BY id"),
+          Row("3", "c", "p3") :: Row("4", "d", "p4") :: Nil)
       }
     })
 }
